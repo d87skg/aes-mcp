@@ -1,1 +1,0 @@
-content = open('intent_content.txt','r',encoding='utf-8').read(); open('INTENT_ONTOLOGY.md','w',encoding='utf-8').write(content); print('done')
