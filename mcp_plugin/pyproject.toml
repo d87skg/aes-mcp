@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "aes-mcp"
+version = "0.1.0"
+description = "AES Runtime Security — MCP plugin for AI agent firewall and forensic replay"
+requires-python = ">=3.10"
+
+[project.scripts]
+aes-mcp = "aes_mcp.server:main"

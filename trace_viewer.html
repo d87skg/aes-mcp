@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEF Drift Forensics Viewer — AI 事故法医面板</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0e17; color: #e0e0e0; padding: 20px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  h1 { font-size: 1.6em; color: #ff4757; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 0.9em; margin-bottom: 24px; }
+  .drop-zone {
+    border: 2px dashed #333;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 24px;
+    background: #111620;
+  }
+  .drop-zone:hover, .drop-zone.dragover { border-color: #ff4757; background: #1a1f2e; }
+  .drop-zone p { color: #aaa; font-size: 0.95em; }
+  .drop-zone .icon { font-size: 2.5em; margin-bottom: 8px; }
+  .timeline { position: relative; padding-left: 30px; }
+  .timeline::before { content: ''; position: absolute; left: 14px; top: 0; bottom: 0; width: 2px; background: #333; }
+  .step { position: relative; margin-bottom: 24px; padding: 16px; border-radius: 10px; background: #111620; border: 1px solid #222; transition: all 0.3s; }
+  .step::before { content: ''; position: absolute; left: -22px; top: 20px; width: 10px; height: 10px; border-radius: 50%; background: #333; border: 2px solid #0a0e17; }
+  .step.normal::before { background: #2ed573; box-shadow: 0 0 8px rgba(46,213,115,0.4); }
+  .step.drift::before { background: #ff4757; box-shadow: 0 0 12px rgba(255,71,87,0.6); animation: pulse 1.5s infinite; }
+  .step.crash::before { background: #ff0000; box-shadow: 0 0 16px rgba(255,0,0,0.8); animation: pulse 0.8s infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.5); } }
+  .step-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .step-number { font-weight: bold; font-size: 1.1em; }
+  .step-status { font-size: 0.8em; padding: 3px 10px; border-radius: 20px; }
+  .status-success { background: #1a3a2a; color: #2ed573; }
+  .status-fail { background: #3a1a1a; color: #ff4757; }
+  .step-detail { font-size: 0.9em; color: #aaa; line-height: 1.6; }
+  .constraint-tag { display: inline-block; background: #1a2030; padding: 3px 10px; border-radius: 4px; margin: 3px; font-size: 0.82em; }
+  .constraint-tag.lost { background: #3a1a1a; color: #ff4757; text-decoration: line-through; }
+  .drift-alert { margin-top: 10px; padding: 12px; border-radius: 8px; border-left: 4px solid #ff4757; background: rgba(255,71,87,0.08); font-size: 0.9em; }
+  .drift-alert strong { color: #ff4757; }
+  .summary-box { background: #111620; border: 1px solid #ff4757; border-radius: 12px; padding: 20px; margin-top: 24px; }
+  .summary-box h2 { color: #ff4757; margin-bottom: 12px; }
+  .summary-box .line { margin: 6px 0; font-size: 0.95em; }
+  .hidden { display: none; }
+  .causality-chain { margin-top: 16px; padding: 12px; background: #0d1117; border-radius: 8px; }
+  .causality-chain .arrow { color: #ff4757; margin: 0 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>AEF Drift Forensics Viewer</h1>
+  <p class="subtitle">AI 执行时间机器 — 拖入 JSONL 日志，回放 AI 如何一步步走向崩溃</p>
+  <div class="drop-zone" id="dropZone">
+    <div class="icon">📂</div>
+    <p>拖放 <strong>trace_drift.jsonl</strong> 文件到此处</p>
+    <p style="font-size: 0.8em; margin-top: 6px;">或点击选择文件</p>
+    <input type="file" id="fileInput" accept=".jsonl,.json" style="display:none">
+  </div>
+  <div id="timelineContainer" class="hidden">
+    <h3 style="margin-bottom: 16px;">⏱️ 执行轨迹时间轴</h3>
+    <div class="timeline" id="timeline"></div>
+    <div class="summary-box" id="summary"></div>
+    <div class="causality-chain" id="causalityChain"></div>
+  </div>
+</div>
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const timelineContainer = document.getElementById('timelineContainer');
+const timeline = document.getElementById('timeline');
+const summaryBox = document.getElementById('summary');
+const causalityDiv = document.getElementById('causalityChain');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+});
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) processFile(file);
+});
+
+async function processFile(file) {
+  const text = await file.text();
+  const lines = text.trim().split('\n');
+  const steps = lines.map(line => JSON.parse(line));
+  renderTimeline(steps);
+  renderSummary(steps);
+  renderCausality(steps);
+  dropZone.classList.add('hidden');
+  timelineContainer.classList.remove('hidden');
+}
+
+function renderTimeline(steps) {
+  timeline.innerHTML = '';
+  steps.forEach((step) => {
+    const output = step.output || {};
+    const isCrash = output.status === 'liquidated' || output.status === 'error';
+    const hasDrift = step.drift_indicators && Object.keys(step.drift_indicators).length > 0;
+    const stepClass = isCrash ? 'crash' : (hasDrift ? 'drift' : 'normal');
+    const statusClass = isCrash ? 'status-fail' : 'status-success';
+    const statusText = isCrash ? '💥 爆仓' : '✅ 正常';
+    const constraints = (step.context_snapshot?.active_constraints || []);
+    const constraintTags = constraints.map(c => {
+      const isLost = hasDrift && step.drift_indicators?.constraint_lost?.includes(c);
+      return '<span class="constraint-tag' + (isLost ? ' lost' : '') + '">' + c + '</span>';
+    }).join('');
+    const driftAlert = hasDrift ? '<div class="drift-alert"><strong>⚠️ 漂移检测</strong><br>丢失约束: <span style="color:#ff4757">' + step.drift_indicators.constraint_lost + '</span><br>疑似原因: ' + (step.drift_indicators.suspected_cause || '未知') + '<br>污染来源: ' + (step.drift_indicators.pollution_source || 'N/A') + '</div>' : '';
+    const lossInfo = isCrash ? '<div style="margin-top:8px;color:#ff4757">💸 损失: ' + (output.loss || '未知') + ' | 清算价: ' + (output.liquidation_price || 'N/A') + '</div>' : '';
+    timeline.innerHTML += '<div class="step ' + stepClass + '"><div class="step-header"><span class="step-number">Step ' + step.step + '</span><span class="step-status ' + statusClass + '">' + statusText + '</span></div><div class="step-detail"><strong>操作:</strong> ' + step.tool + ' — ' + (step.input?.action || 'N/A') + '<br><strong>杠杆:</strong> <span style="color:' + (step.input?.leverage > 3 ? '#ff4757' : '#2ed573') + '">' + step.input?.leverage + 'x</span> | <strong>金额:</strong> $' + step.input?.amount + '<br><strong>活跃约束:</strong> ' + constraintTags + '</div>' + driftAlert + lossInfo + '</div>';
+  });
+}
+
+function renderSummary(steps) {
+  const crashStep = steps.find(s => s.output?.status === 'liquidated');
+  const driftStep = steps.find(s => s.drift_indicators && Object.keys(s.drift_indicators).length > 0);
+  summaryBox.innerHTML = '<h2>📋 事故摘要</h2><div class="line">🔴 <strong>根因:</strong> 长上下文污染导致风控约束 <code style="color:#ff4757">max_leverage: 3x</code> 从活跃约束中滑落</div><div class="line">💥 <strong>后果:</strong> Agent 在第 ' + (crashStep?.step || '?') + ' 步执行 10x 杠杆交易，触发爆仓</div><div class="line">💰 <strong>损失:</strong> ' + (crashStep?.output?.loss || '未知') + ' (~' + (crashStep?.output?.liquidation_price || 'N/A') + ' 清算)</div><div class="line">🛡️ <strong>可预防:</strong> YES — AEF 在第 ' + (driftStep?.step || '?') + ' 步检测到约束丢失，可触发熔断</div><div class="line">🔗 <strong>污染源:</strong> 聊天历史中的无关 aggressive mode 上下文残留</div>';
+}
+
+function renderCausality(steps) {
+  const driftStep = steps.find(s => s.drift_indicators);
+  const crashStep = steps.find(s => s.output?.status === 'liquidated');
+  causalityDiv.innerHTML = '<strong>🔗 因果链 (Causality Chain)</strong><br><span>Chat Context Pollution</span><span class="arrow">→</span><span>Goal Drift (第 ' + (driftStep?.step || '?') + ' 步)</span><span class="arrow">→</span><span style="color:#ff4757">Constraint max_leverage:3x 滑落</span><span class="arrow">→</span><span>超限杠杆 10x (第 ' + (crashStep?.step || '?') + ' 步)</span><span class="arrow">→</span><span style="color:#ff0000">💥 爆仓 / 资金损失</span>';
+}
+</script>
+</body>
+</html>

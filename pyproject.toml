@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aes-mcp"
+version = "0.1.0"
+description = "Runtime Security Layer for MCP-based AI Agents"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+aes-mcp = "aes_mcp.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/aes-security/aes"
+
+[tool.setuptools.packages.find]
+include = ["aes_mcp*"]

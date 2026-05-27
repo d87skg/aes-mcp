@@ -1,0 +1,245 @@
+constraints:
+- auto_meltdown: true
+  category: risk_management
+  check_type: boundary
+  description: 最大杠杆倍数不得超过 3x
+  id: max_leverage
+  rule: leverage <= 3
+  severity: critical
+- auto_meltdown: true
+  category: risk_management
+  check_type: boundary
+  description: 单笔头寸不得超过 5000 USDC
+  id: max_position_size
+  rule: amount <= 5000
+  severity: critical
+- auto_meltdown: false
+  category: risk_management
+  check_type: presence
+  description: 每笔交易必须设置止损
+  id: stop_loss_required
+  rule: stop_loss is set
+  severity: high
+- auto_meltdown: false
+  category: context_hygiene
+  check_type: semantic
+  description: 不得因聊天上下文中的无关内容改变风险偏好
+  id: no_aggressive_mode
+  rule: risk_profile == baseline
+  severity: high
+dynamic_thresholds:
+  enabled: true
+  rules:
+  - adjustment:
+      max_leverage: 2.0
+      max_position_size: 3000
+    description: 市场波动率 > 0.8 时收紧杠杆上限至 2x
+    name: volatility_adaptation
+    trigger:
+      metric: market_volatility
+      operator: '>'
+      value: 0.8
+  - adjustment:
+      max_leverage: 1.5
+      max_position_size: 1000
+      require_approval: true
+    description: 连续 3 次亏损后收紧所有限制
+    name: loss_streak_adaptation
+    trigger:
+      metric: consecutive_losses
+      operator: '>='
+      value: 3
+  - adjustment:
+      max_leverage: 5.0
+      max_position_size: 10000
+    description: AES Score > 900 且 100 步无违规 → 放宽限制
+    name: high_confidence_adaptation
+    trigger:
+      and_metric: steps_without_violation
+      and_operator: '>'
+      and_value: 100
+      metric: aes_score
+      operator: '>'
+      value: 900
+  - adjustment:
+      max_leverage: 2.0
+      max_position_size: 2000
+      require_approval: true
+    description: 多 Agent 协作时收紧所有限制
+    name: multi_agent_risk_adaptation
+    trigger:
+      metric: active_agents
+      operator: '>='
+      value: 3
+hot_reload:
+  check_interval_seconds: 30
+  enabled: true
+  policy_file: risk_policy.yaml
+meltdown:
+  global:
+    aes_score: 400
+    ci_score: 200
+  violation_patterns:
+    high_toggle: 3
+    persistent_steps: 5
+    rapid_recovery: 2
+notifications:
+  on_meltdown:
+  - path: aef_meltdown.jsonl
+    type: log
+  - format: '[AES MELTDOWN] {agent_id} {tool} {reason}'
+    type: stdout
+  on_restriction:
+  - path: aef_restrictions.jsonl
+    type: log
+  on_warning:
+  - path: aef_warnings.jsonl
+    type: log
+response_levels:
+  ALLOW:
+    conditions:
+    - aes_score >= 700
+    - constraint_violations == 0
+    description: 操作安全，正常放行
+  BLOCK:
+    actions:
+    - deny_execution
+    - log_meltdown
+    - notify_admin
+    conditions:
+    - aes_score < 300
+    - ci_score < 200
+    - persistent_violations >= 5
+    - high_toggle >= 3
+    description: 极高风险，阻止执行
+  RESTRICT:
+    actions:
+    - reduce_leverage_cap: 2x
+    - reduce_position_cap: 2000
+    - require_approval: true
+    - log_restriction
+    conditions:
+    - aes_score >= 300
+    - constraint_violations <= 5
+    description: 高风险，限制操作范围
+  WARN:
+    actions:
+    - log_warning
+    - increment_risk_counter
+    conditions:
+    - aes_score >= 500
+    - constraint_violations <= 2
+    description: 存在风险信号，放行但记录警告
+tool_policies:
+  agent_delegation:
+    agent_trust_threshold: 700
+    block_recursive_delegation: true
+    blocked_agent_roles:
+    - treasury_admin
+    - root
+    - superuser
+    max_delegated_amount: 10000
+    max_delegation_depth: 3
+    require_agent_signature: true
+  api_call:
+    allowed_domains: []
+    auto_meltdown: true
+    block_data_exfiltration: true
+    blocked_domains:
+    - localhost
+    - 127.0.0.1
+    - 169.254.169.254
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+    blocked_ports:
+    - 22
+    - 3389
+    - 6379
+    - 27017
+    - 5432
+    - 3306
+    max_payload_size_bytes: 1048576
+    max_request_per_minute: 60
+    require_https: true
+    sensitive_headers:
+    - Authorization
+    - X-API-Key
+    - Cookie
+  database_query:
+    auto_meltdown: true
+    blocked_commands:
+    - DROP
+    - TRUNCATE
+    - ALTER
+    - GRANT
+    - REVOKE
+    - CREATE USER
+    blocked_tables:
+    - users
+    - passwords
+    - secrets
+    - api_keys
+    - wallets
+    max_rows_returned: 1000
+    require_read_only: true
+    require_where_clause: true
+  execute_trade:
+    blocked_pairs: []
+    cooldown_seconds: 2
+    max_leverage: 3.0
+    max_position_size: 5000
+    max_slippage_percent: 5.0
+    require_stop_loss: true
+  file_write:
+    allow_outside_workspace: false
+    auto_meltdown: true
+    blocked_extensions:
+    - .sh
+    - .bashrc
+    - .profile
+    - .bash_history
+    - .ssh
+    - .pem
+    - .key
+    - .env
+    blocked_paths:
+    - /etc/
+    - /system/
+    - ~/.ssh/
+    - C:\\Windows\\
+    - /boot/
+    - /sys/
+    - /proc/
+    blocked_patterns:
+    - password
+    - secret
+    - token
+    - private_key
+    - api_key
+    max_file_size_bytes: 10485760
+    workspace_root: ./workspace
+  governance_action:
+    blocked_actions:
+    - remove_constraint
+    - disable_meltdown
+    - transfer_ownership
+    min_voting_period_seconds: 3600
+    require_quorum: 0.66
+    require_timelock: true
+    timelock_seconds: 86400
+  shell_command:
+    allowed_paths: []
+    blocked_commands:
+    - rm -rf
+    - sudo
+    - chmod 777
+    - dd if=
+    - mkfs.
+    - ':(){ :|:& };:'
+    blocked_patterns:
+    - curl.*|.*sh
+    - wget.*-O.*|.*sh
+    max_command_length: 500
+updated: '2026-05-26'
+version: '1.1'

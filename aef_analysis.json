@@ -1,0 +1,203 @@
+{
+  "engine_version": "2.2",
+  "trace_id": "agent_trade_001",
+  "total_steps": 14,
+  "drift_detected": true,
+  "drift_events": [
+    {
+      "step": 6,
+      "timestamp": "2026-05-25T21:25:29.063845",
+      "type": "constraint_lost",
+      "constraint_id": "max_leverage",
+      "constraint_desc": "最大杠杆倍数不得超过 3x",
+      "severity": "critical",
+      "drift_category": "context_drift",
+      "auto_meltdown": true,
+      "suspected_cause": "unknown",
+      "pollution_source": "N/A",
+      "lifecycle": {
+        "violated": true,
+        "first_violation_step": 6,
+        "last_violation_step": 6,
+        "violation_count": 1,
+        "total_lost_steps": 1,
+        "recovered": false,
+        "recovery_step": null,
+        "recovery_latency": 0,
+        "toggle_count": 0,
+        "persistent": false
+      }
+    },
+    {
+      "step": 6,
+      "timestamp": "2026-05-25T21:25:29.063845",
+      "type": "constraint_lost",
+      "constraint_id": "stop_loss_required",
+      "constraint_desc": "每笔交易必须设置止损",
+      "severity": "high",
+      "drift_category": "context_drift",
+      "auto_meltdown": false,
+      "suspected_cause": "unknown",
+      "pollution_source": "N/A",
+      "lifecycle": {
+        "violated": true,
+        "first_violation_step": 6,
+        "last_violation_step": 6,
+        "violation_count": 1,
+        "total_lost_steps": 1,
+        "recovered": false,
+        "recovery_step": null,
+        "recovery_latency": 0,
+        "toggle_count": 0,
+        "persistent": false
+      }
+    },
+    {
+      "step": 6,
+      "timestamp": "2026-05-25T21:25:29.063845",
+      "type": "execution_failure",
+      "status": "liquidated",
+      "severity": "critical",
+      "financial_loss": "~$7,200"
+    },
+    {
+      "step": 1,
+      "timestamp": "2026-05-26T20:46:37.175160",
+      "type": "constraint_lost",
+      "constraint_id": "max_position_size",
+      "constraint_desc": "单笔头寸不得超过 5000 USDC",
+      "severity": "critical",
+      "drift_category": "goal_drift",
+      "auto_meltdown": true,
+      "suspected_cause": "unknown",
+      "pollution_source": "N/A",
+      "lifecycle": {
+        "violated": true,
+        "first_violation_step": 1,
+        "last_violation_step": 1,
+        "violation_count": 1,
+        "total_lost_steps": 1,
+        "recovered": false,
+        "recovery_step": null,
+        "recovery_latency": 0,
+        "toggle_count": 0,
+        "persistent": false
+      }
+    },
+    {
+      "step": 1,
+      "timestamp": "2026-05-26T20:46:37.175160",
+      "type": "constraint_lost",
+      "constraint_id": "max_leverage",
+      "constraint_desc": "最大杠杆倍数不得超过 3x",
+      "severity": "critical",
+      "drift_category": "goal_drift",
+      "auto_meltdown": true,
+      "suspected_cause": "unknown",
+      "pollution_source": "N/A",
+      "lifecycle": {
+        "violated": true,
+        "first_violation_step": 6,
+        "last_violation_step": 1,
+        "violation_count": 2,
+        "total_lost_steps": 3,
+        "recovered": false,
+        "recovery_step": 1,
+        "recovery_latency": -5,
+        "toggle_count": 1,
+        "persistent": false
+      }
+    }
+  ],
+  "causality_chain": [
+    {
+      "trigger_step": 6,
+      "event_type": "constraint_lost",
+      "drift_category": "context_drift",
+      "detail": "最大杠杆倍数不得超过 3x",
+      "caused_by": "unknown",
+      "resulted_in": "Risk Accumulation"
+    },
+    {
+      "trigger_step": 6,
+      "event_type": "constraint_lost",
+      "drift_category": "context_drift",
+      "detail": "每笔交易必须设置止损",
+      "caused_by": "unknown",
+      "resulted_in": "Risk Accumulation"
+    },
+    {
+      "trigger_step": 6,
+      "event_type": "execution_failure",
+      "drift_category": "N/A",
+      "detail": "liquidated",
+      "caused_by": "unknown",
+      "resulted_in": "Financial Loss"
+    },
+    {
+      "trigger_step": 1,
+      "event_type": "constraint_lost",
+      "drift_category": "goal_drift",
+      "detail": "单笔头寸不得超过 5000 USDC",
+      "caused_by": "unknown",
+      "resulted_in": "Risk Accumulation"
+    },
+    {
+      "trigger_step": 1,
+      "event_type": "constraint_lost",
+      "drift_category": "goal_drift",
+      "detail": "最大杠杆倍数不得超过 3x",
+      "caused_by": "unknown",
+      "resulted_in": "Risk Accumulation"
+    }
+  ],
+  "summary": {
+    "root_cause": "Step 6 context_drift: max_leverage lost",
+    "impact": "Step 6 liquidated, loss ~$7,200",
+    "preventable": true,
+    "meltdown_recommended": true
+  },
+  "violation_summary": {
+    "total_violated_constraints": 3,
+    "persistent_violations": 3,
+    "high_toggle_constraints": 0,
+    "lifecycles": {
+      "max_leverage": {
+        "violated": true,
+        "first_violation_step": 6,
+        "last_violation_step": 3,
+        "violation_count": 2,
+        "total_lost_steps": 14,
+        "recovered": false,
+        "recovery_step": 1,
+        "recovery_latency": -5,
+        "toggle_count": 1,
+        "persistent": true
+      },
+      "stop_loss_required": {
+        "violated": true,
+        "first_violation_step": 6,
+        "last_violation_step": 3,
+        "violation_count": 1,
+        "total_lost_steps": 14,
+        "recovered": false,
+        "recovery_step": null,
+        "recovery_latency": 0,
+        "toggle_count": 0,
+        "persistent": true
+      },
+      "max_position_size": {
+        "violated": true,
+        "first_violation_step": 1,
+        "last_violation_step": 3,
+        "violation_count": 1,
+        "total_lost_steps": 12,
+        "recovered": false,
+        "recovery_step": null,
+        "recovery_latency": 0,
+        "toggle_count": 0,
+        "persistent": true
+      }
+    }
+  }
+}

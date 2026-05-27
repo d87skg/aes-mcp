@@ -1,0 +1,182 @@
+{
+  "engine": "ESE_ENGINE_v0.1",
+  "mode": "shadow",
+  "results": [
+    {
+      "led_score": 0.0,
+      "led_breakdown": {
+        "retry_storm": 0.0,
+        "api_burn": 0.0,
+        "resource_leak": 0.0,
+        "latent_degradation": 0.0,
+        "coordination_cost": 0.0
+      },
+      "economic_signals": {
+        "total_signals": 0,
+        "unique_categories": [],
+        "category_counts": {},
+        "retry_steps": 0,
+        "error_steps": 0,
+        "total_steps": 5
+      },
+      "led_risk_level": "LOW",
+      "trace_id": "GT-001",
+      "aes_score": 1000.0,
+      "aes_level": "AAA"
+    },
+    {
+      "led_score": 0.037,
+      "led_breakdown": {
+        "retry_storm": 0.0,
+        "api_burn": 0.0,
+        "resource_leak": 0.0,
+        "latent_degradation": 0.25,
+        "coordination_cost": 0.0
+      },
+      "economic_signals": {
+        "total_signals": 1,
+        "unique_categories": [
+          "latent_degradation"
+        ],
+        "category_counts": {
+          "latent_degradation": 1
+        },
+        "retry_steps": 0,
+        "error_steps": 0,
+        "total_steps": 5
+      },
+      "led_risk_level": "LOW",
+      "trace_id": "GT-002",
+      "aes_score": 760.0,
+      "aes_level": "A"
+    },
+    {
+      "led_score": 0.0,
+      "led_breakdown": {
+        "retry_storm": 0.0,
+        "api_burn": 0.0,
+        "resource_leak": 0.0,
+        "latent_degradation": 0.0,
+        "coordination_cost": 0.0
+      },
+      "economic_signals": {
+        "total_signals": 0,
+        "unique_categories": [],
+        "category_counts": {},
+        "retry_steps": 0,
+        "error_steps": 0,
+        "total_steps": 5
+      },
+      "led_risk_level": "LOW",
+      "trace_id": "GT-003",
+      "aes_score": 670.0,
+      "aes_level": "BBB"
+    },
+    {
+      "led_score": 0.0,
+      "led_breakdown": {
+        "retry_storm": 0.0,
+        "api_burn": 0.0,
+        "resource_leak": 0.0,
+        "latent_degradation": 0.0,
+        "coordination_cost": 0.0
+      },
+      "economic_signals": {
+        "total_signals": 0,
+        "unique_categories": [],
+        "category_counts": {},
+        "retry_steps": 0,
+        "error_steps": 0,
+        "total_steps": 5
+      },
+      "led_risk_level": "LOW",
+      "trace_id": "GT-004",
+      "aes_score": 665.0,
+      "aes_level": "BBB"
+    },
+    {
+      "led_score": 0.15,
+      "led_breakdown": {
+        "retry_storm": 0.0,
+        "api_burn": 0.0,
+        "resource_leak": 0.0,
+        "latent_degradation": 0.0,
+        "coordination_cost": 1.0
+      },
+      "economic_signals": {
+        "total_signals": 5,
+        "unique_categories": [
+          "coordination_cost"
+        ],
+        "category_counts": {
+          "coordination_cost": 5
+        },
+        "retry_steps": 0,
+        "error_steps": 0,
+        "total_steps": 5
+      },
+      "led_risk_level": "LOW",
+      "trace_id": "GT-005",
+      "aes_score": 540.0,
+      "aes_level": "BB"
+    },
+    {
+      "led_score": 0.812,
+      "led_breakdown": {
+        "retry_storm": 1.0,
+        "api_burn": 1.0,
+        "resource_leak": 1.0,
+        "latent_degradation": 0.75,
+        "coordination_cost": 0.0
+      },
+      "economic_signals": {
+        "total_signals": 18,
+        "unique_categories": [
+          "api_burn",
+          "resource_leak",
+          "retry_storm",
+          "latent_degradation"
+        ],
+        "category_counts": {
+          "api_burn": 2,
+          "retry_storm": 8,
+          "resource_leak": 5,
+          "latent_degradation": 3
+        },
+        "retry_steps": 4,
+        "error_steps": 5,
+        "total_steps": 6
+      },
+      "led_risk_level": "HIGH",
+      "trace_id": "GT-006",
+      "aes_score": 630.0,
+      "aes_level": "BBB"
+    },
+    {
+      "led_score": 0.0,
+      "led_breakdown": {
+        "retry_storm": 0.0,
+        "api_burn": 0.0,
+        "resource_leak": 0.0,
+        "latent_degradation": 0.0,
+        "coordination_cost": 0.0
+      },
+      "economic_signals": {
+        "total_signals": 1,
+        "unique_categories": [
+          "retry_storm"
+        ],
+        "category_counts": {
+          "retry_storm": 1
+        },
+        "retry_steps": 0,
+        "error_steps": 0,
+        "total_steps": 6
+      },
+      "led_risk_level": "LOW",
+      "trace_id": "GT-007",
+      "aes_score": 680.0,
+      "aes_level": "BBB"
+    }
+  ]
+}

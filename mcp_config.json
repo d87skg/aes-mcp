@@ -1,0 +1,12 @@
+$cfg = @'
+{
+  "mcpServers": {
+    "aef": {
+      "command": "python",
+      "args": ["D:\\AEGISaef-core\\aef_mcp_server.py"],
+      "env": {}
+    }
+  }
+}
+'@
+$cfg | Out-File -FilePath mcp_config.json -Encoding UTF8
