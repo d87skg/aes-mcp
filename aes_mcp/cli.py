@@ -9,8 +9,10 @@ def main():
     args = parser.parse_args()
 
     if args.demo:
-        demo_map = {"episode_1": "demos/episode_1_meltdown.json", "episode_2": "demos/episode_2_deletion.json"}
-        demo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), demo_map[args.demo])
+        cli_dir = os.path.dirname(os.path.abspath(__file__))
+        demos_dir = os.path.join(cli_dir, "..", "demos")
+        demo_map = {"episode_1": "episode_1_meltdown.json", "episode_2": "episode_2_deletion.json"}
+        demo_path = os.path.normpath(os.path.join(demos_dir, demo_map[args.demo]))
         if os.path.exists(demo_path):
             with open(demo_path, "r", encoding="utf-8") as f:
                 for line in f:
@@ -21,9 +23,9 @@ def main():
             print(f"Demo file not found: {demo_path}")
         return
 
-    print("AES-MCP v0.1.0 — AI Runtime Security")
+    print("AES-MCP v2.0.0 — AI Runtime Security")
     print("Starting MCP server...")
-    sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from aes_mcp.server import AESMCPServer
     AESMCPServer().run()
 

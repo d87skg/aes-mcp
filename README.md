@@ -1,4 +1,9 @@
-# AES-MCP
+# AES-MCP ¡ª AI Runtime Security
+
+**v2.0.0** (evolved from AEGIS prototype)
+
+Runtime Firewall and Forensic Replay for AI Agents.
+
 
 **Runtime Security Layer for MCP-based AI Agents.**
 

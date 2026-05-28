@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AES Risk Policy Engine V1.1 — 扩展工具级 + 多 Agent 协同策略
+AES Risk Policy Engine V1.1 鈥?鎵╁睍宸ュ叿绾?+ 澶?Agent 鍗忓悓绛栫暐
 """
 import json, yaml, os, sys, time, re
 from datetime import datetime
@@ -121,7 +121,7 @@ class RiskPolicyEngine:
                 violations.append({"constraint":"stop_loss","rule":"required","action":"missing","auto_meltdown":False})
             cooldown = tp.get("cooldown_seconds", 0)
             if cooldown and time.time() - self.last_trade_time.get(agent_id, 0) < cooldown:
-                violations.append({"constraint":"cooldown",f"rule":f"{cooldown}s","action":"too_fast","auto_meltdown":False})
+                violations.append({"constraint":"cooldown","rule":f"{cooldown}s","action":"too_fast","auto_meltdown":False})
             self.last_trade_time[agent_id] = time.time()
 
         elif tool == "shell_command":
@@ -224,7 +224,7 @@ class RiskPolicyEngine:
 
 if __name__ == "__main__":
     print("=" * 65)
-    print("AES Risk Policy Engine V1.1 — Extended Tool Policies")
+    print("AES Risk Policy Engine V1.1 鈥?Extended Tool Policies")
     print("=" * 65)
 
     engine = RiskPolicyEngine()
@@ -248,7 +248,7 @@ if __name__ == "__main__":
         level, actions, reason = engine.evaluate("test_agent", tool, params, aes, ci, {"persistent_violations":0,"high_toggle_constraints":0}, {})
         icon = "OK" if level == "ALLOW" else ("WARN" if level == "WARN" else "BLOCK")
         print(f"\n[{icon}] {tool}: {str(params)[:70]}")
-        print(f"     AES={aes} → {level} | {str(reason)[:80]}")
+        print(f"     AES={aes} 鈫?{level} | {str(reason)[:80]}")
 
     print("\n" + "=" * 65)
-    print("V1.1 ready — 6 tool policies active")
+    print("V1.1 ready 鈥?6 tool policies active")

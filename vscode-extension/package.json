@@ -1,0 +1,40 @@
+{
+  "name": "aes-mcp-security",
+  "displayName": "AES Runtime Security",
+  "version": "2.0.0",
+  "description": "Runtime Firewall & Forensic Replay for AI Agents in Cursor & VS Code",
+  "publisher": "aes-security",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/d87skg/aes-mcp"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other", "Linters"],
+  "keywords": ["ai", "security", "runtime", "firewall", "agent", "mcp", "cursor"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {"command": "aes.install", "title": "AES: Install AES-MCP"},
+      {"command": "aes.configure", "title": "AES: Configure MCP for Cursor/VS Code"},
+      {"command": "aes.showStatus", "title": "AES: Show Security Status"},
+      {"command": "aes.demo", "title": "AES: Run Payment Attack Demo"},
+      {"command": "aes.traceViewer", "title": "AES: Open Trace Viewer"}
+    ],
+    "configuration": {
+      "title": "AES Runtime Security",
+      "properties": {
+        "aes.adminToken": {"type": "string", "default": "", "description": "Admin token for MELTDOWN recovery"},
+        "aes.signingKey": {"type": "string", "default": "", "description": "HMAC signing key for execution proofs"}
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "package": "vsce package"
+  }
+}

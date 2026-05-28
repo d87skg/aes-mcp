@@ -1,0 +1,21 @@
+# AES Runtime Security Policy v1.0
+max_leverage: 3.0
+max_position_size: 5000
+require_stop_loss: true
+blocked_commands:
+  - "rm -rf"
+  - "sudo"
+  - "chmod 777"
+  - "dd if="
+blocked_paths:
+  - "/etc/"
+  - "/system/"
+  - "~/.ssh/"
+blocked_domains:
+  - "localhost"
+  - "127.0.0.1"
+  - "169.254.169.254"
+blocked_sql:
+  - "DROP"
+  - "TRUNCATE"
+  - "ALTER"

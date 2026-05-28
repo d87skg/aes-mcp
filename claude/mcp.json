@@ -1,0 +1,1 @@
+{"mcpServers":{"aes":{"command":"python","args":["-m","aes_mcp.server"]}}}
